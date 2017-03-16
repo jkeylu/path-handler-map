@@ -1,0 +1,43 @@
+{
+  "name": "path-handler-map",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "test": "mocha --compilers ts:ts-node/register test/*.ts test/**/*.ts",
+    "cover": "nyc --extension .ts --require ts-node/register npm test",
+    "bench": "ts-node benchmarks",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkeylu/path-handler-map.git"
+  },
+  "keywords": [
+    "express",
+    "koa",
+    "route",
+    "routing"
+  ],
+  "author": "jKey Lu <jkeylu@gmail.com> (https://github.com/jkeylu)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jkeylu/path-handler-map/issues"
+  },
+  "homepage": "https://github.com/jkeylu/path-handler-map#readme",
+  "devDependencies": {
+    "@types/benchmark": "^1.0.30",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.8",
+    "benchmark": "^2.1.3",
+    "mocha": "^3.2.0",
+    "nyc": "^10.1.2",
+    "path-to-regexp": "^1.7.0",
+    "route-recognizer": "^0.2.9",
+    "trek-router": "^1.1.1",
+    "ts-node": "^2.1.0",
+    "typescript": "^2.2.1",
+    "wayfarer": "^6.5.0"
+  }
+}
