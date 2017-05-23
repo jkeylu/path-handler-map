@@ -8,7 +8,8 @@
     "test": "mocha --compilers ts:ts-node/register test/*.ts test/**/*.ts",
     "cover": "nyc --extension .ts --require ts-node/register npm test",
     "bench": "ts-node benchmarks",
-    "build": "tsc"
+    "build": "tsc",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
