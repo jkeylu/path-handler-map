@@ -6,10 +6,10 @@ describe('PathHandlerMap.lookup', () => {
 
     beforeEach(() => {
         m = new PathHandlerMap();
-        m.add('GET', '/about', () => { });
-        m.add('GET', '/user_info/:username', () => { });
-        m.add('GET', '/post/:year/:month/:day', () => { });
-        m.add('GET', '/page/*', () => { });
+        m.add('/about', 'GET', () => { });
+        m.add('/user_info/:username', 'GET', () => { });
+        m.add('/post/:year/:month/:day', 'GET', () => { });
+        m.add('/page/*', 'GET', () => { });
     });
 
     it('static node', () => {

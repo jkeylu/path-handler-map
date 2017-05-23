@@ -8,7 +8,7 @@ describe('Github API', () => {
     beforeEach(() => {
         m = new PathHandlerMap();
         githubApiList.forEach(api => {
-            m.add(api.method, api.pathExpression, api.handler);
+            m.add(api.pathExpression, api.method, api.handler);
         });
     });
 

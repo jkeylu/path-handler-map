@@ -10,7 +10,7 @@ const wayfarer = require('wayfarer');
 // path-handler-map
 var pathHandlerMap = new PathHandlerMap();
 githubApiListWithoutAny.forEach(api => {
-    pathHandlerMap.add(api.method, api.pathExpression, api.handler);
+    pathHandlerMap.add(api.pathExpression, api.method, api.handler);
 });
 
 // trek-router

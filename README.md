@@ -14,8 +14,8 @@ npm install path-handler-map
 import { PathHandlerMap } from 'path-handler-map';
 
 let m = new PathHandlerMap();
-m.add('GET', '/user', () => { });
-m.add('GET', '/post/:post_id', () => { });
+m.add('/user', 'GET', () => { });
+m.add('/post/:post_id', 'GET', () => { });
 
 let r = m.find('GET', '/post/234');
 ```

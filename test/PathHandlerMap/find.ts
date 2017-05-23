@@ -9,7 +9,7 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('missing prefix /', () => {
-        map.add('GET', 'user', function f1() { });
+        map.add('user', 'GET', function f1() { });
 
         let r = map.find('GET', '/user');
         assert.equal(r.found, true);
@@ -17,8 +17,8 @@ describe('PathHandlerMap.find', () => {
     })
 
     it('match static', () => {
-        map.add('GET', '/:a/:b/:c', function f1() { });
-        map.add('GET', '/:a/:b/c', function f2() { });
+        map.add('/:a/:b/:c', 'GET', function f1() { });
+        map.add('/:a/:b/c', 'GET', function f2() { });
 
         let r = map.find('GET', '/a/b/c');
         assert.equal(r.found, true);
@@ -26,10 +26,10 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('match param', () => {
-        map.add('GET', '/a/b', function f1() { });
-        map.add('GET', '/a/:b', function f2() { });
-        map.add('GET', '/a/*', function f3() { });
-        map.add('GET', '/*', function f4() { });
+        map.add('/a/b', 'GET', function f1() { });
+        map.add('/a/:b', 'GET', function f2() { });
+        map.add('/a/*', 'GET', function f3() { });
+        map.add('/*', 'GET', function f4() { });
 
         let r = map.find('GET', '/a/c');
         assert.equal(r.found, true);
@@ -37,7 +37,7 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('match unnamed param', () => {
-        map.add('GET', '/a/:', function f1() { });
+        map.add('/a/:', 'GET', function f1() { });
 
         let r = map.find('GET', '/a/b');
         assert.equal(r.found, true);
@@ -46,8 +46,8 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('match any', () => {
-        map.add('GET', '/:a/:b/:c', function f1() { });
-        map.add('GET', '/:a*', function f2() { });
+        map.add('/:a/:b/:c', 'GET', function f1() { });
+        map.add('/:a*', 'GET', function f2() { });
 
         let r = map.find('GET', '/a/b/c/d');
         assert.equal(r.found, true);
@@ -57,7 +57,7 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('match unnamed any', () => {
-        map.add('GET', '/a/*', function f1() { });
+        map.add('/a/*', 'GET', function f1() { });
 
         let r = map.find('GET', '/a/b/c');
         assert.equal(r.found, true);
@@ -66,7 +66,7 @@ describe('PathHandlerMap.find', () => {
     });
 
     it('not match', () => {
-        map.add('GET', '/user_info', function f1(){});
+        map.add('/user_info', 'GET', function f1(){});
 
         let r = map.find('GET', '/user');
         assert.equal(r.found, false);
