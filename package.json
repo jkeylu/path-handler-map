@@ -9,7 +9,7 @@
     "cover": "nyc --extension .ts --require ts-node/register npm test",
     "bench": "ts-node benchmarks",
     "build": "tsc",
-    "publish": "npm run build && npm publish"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
