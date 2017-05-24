@@ -148,6 +148,38 @@ export class Node {
     }
 }
 
+/**
+ * merge two Nodes with same prefix
+ * @param dest dest Node
+ * @param source source Node
+ */
+function _merge(dest: Node, source: Node) {
+    var labels: string[],
+        label: number,
+        i: number,
+        len: number;
+
+    Object.assign(dest.handlerMap, source.handlerMap);
+
+    labels = Object.keys(source.children);
+    for (i = 0, len = labels.length; i < len; i++) {
+        label = <any>labels[i];
+
+        if (dest.children[label]) {
+            merge(dest.children[label], source.children[label]);
+        } else {
+            dest.addChild(source.children[label]);
+        }
+    }
+
+    return dest;
+}
+
+/**
+ * merge two Nodes with same label
+ * @param dest dest Node
+ * @param source source Node
+ */
 function merge(dest: Node, source: Node) {
     var labels: string[],
         label: number,
@@ -162,20 +194,7 @@ function merge(dest: Node, source: Node) {
     source.parent = null;
 
     if (dest.prefix == source.prefix) {
-        Object.assign(dest.handlerMap, source.handlerMap);
-
-        labels = Object.keys(source.children);
-        for (i = 0, len = labels.length; i < len; i++) {
-            label = <any>labels[i];
-
-            if (dest.children[label]) {
-                merge(dest.children[label], source.children[label]);
-            } else {
-                dest.addChild(source.children[label]);
-            }
-        }
-
-        return dest;
+        return _merge(dest, source);
     }
 
     dpl = dest.prefix.length;
@@ -207,20 +226,7 @@ function merge(dest: Node, source: Node) {
 
     // l < dpl && l == spl && dpl > spl
     if (l == spl) {
-        Object.assign(dest.handlerMap, source.handlerMap);
-
-        labels = Object.keys(source.children);
-        for (i = 0, len = labels.length; i < len; i++) {
-            label = <any>labels[i];
-
-            if (dest.children[label]) {
-                merge(dest.children[label], source.children[label]);
-            } else {
-                dest.addChild(source.children[label]);
-            }
-        }
-
-        return dest;
+        return _merge(dest, source);
     }
 
     // l < dpl && l < spl
@@ -237,7 +243,7 @@ export class PathHandlerMap {
     }
 
     /**
-     * merge two Nodes
+     * merge two Nodes, source Node must to start with "/"
      * @param dest dest Node
      * @param source source Node
      * @param prefixPnames prefix pnames

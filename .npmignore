@@ -1,4 +1,5 @@
 index.ts
 tsconfig.json
+.nyc_output/
 benchmarks/
 test/

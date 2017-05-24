@@ -31,17 +31,21 @@ describe('merge', () => {
         ];
 
         githubApiList.forEach((api, i) => {
-            it(`[github] find ${api.method} ${api.pathExpression}`, () => {
-                let r = m.find(api.method, api.path);
-                assert.equal(r.found, true);
-                assert.equal(r.pvalues.length, r.pnames.length);
-
-                if (~overridden.indexOf(`${api.method} ${api.pathExpression}`)) {
+            if (~overridden.indexOf(`${api.method} ${api.pathExpression}`)) {
+                it(`[github] find ${api.method} ${api.pathExpression}, but handler has been overridden`, () => {
+                    let r = m.find(api.method, api.path);
+                    assert.equal(r.found, true);
+                    assert.equal(r.pvalues.length, r.pnames.length);
                     assert.notEqual(r.handler, githubApiList[i].handler);
-                } else {
+                });
+            } else {
+                it(`[github] find ${api.method} ${api.pathExpression}`, () => {
+                    let r = m.find(api.method, api.path);
+                    assert.equal(r.found, true);
+                    assert.equal(r.pvalues.length, r.pnames.length);
                     assert.equal(r.handler, githubApiList[i].handler);
-                }
-            });
+                });
+            }
         });
 
         bitbucketApiList.forEach((api, i) => {
