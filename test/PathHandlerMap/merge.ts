@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { githubApiList, bitbucketApiList } from './helper';
-import { PathHandlerMap, Node, skind } from '..';
+import { githubApiList, bitbucketApiList } from '../helper';
+import { PathHandlerMap, Node, skind } from '../..';
 
-describe('merge', () => {
+describe('static merge', () => {
     describe('Github and Bitbucket Apis', () => {
         let m = new PathHandlerMap();
 
@@ -81,5 +81,34 @@ describe('merge', () => {
         assert.equal(r.found, true);
         assert.deepEqual(r.pnames, ['b']);
         assert.deepEqual(r.pvalues, ['b1']);
+    });
+
+    it('merge two simple static node', () => {
+        let m1 = new PathHandlerMap();
+        let m2 = new PathHandlerMap();
+
+        m1.add('/hello/world');
+        m2.add('/foo');
+
+        let node = m1.lookup('/hello/world');
+        PathHandlerMap.merge(node, m2.tree);
+
+        assert.notEqual(m1.lookup('/hello/world/foo'), null);
+    });
+});
+
+describe('instance merge', () => {
+    it('merge on param node', () => {
+        let m1 = new PathHandlerMap();
+        let m2 = new PathHandlerMap();
+
+        m1.add('/a/:b/:c/d', 'GET', function f1() { });
+        m2.add('/foo', 'GET', function f2() { });
+
+        m1.merge(m2, '/a/:b/:c');
+        let r = m1.find('GET', '/a/b/c/foo');
+        assert.equal(r.found, true);
+        assert.equal(r.handler.name, 'f2');
+        assert.deepEqual(r.pnames, ['b', 'c']);
     });
 });

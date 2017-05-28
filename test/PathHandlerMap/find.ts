@@ -65,8 +65,15 @@ describe('PathHandlerMap.find', () => {
         assert.equal(r.pvalues[0], 'b/c');
     });
 
-    it('not match', () => {
-        map.add('/user_info', 'GET', function f1(){});
+    it('not match static', () => {
+        map.add('/user_info', 'GET', function f1() { });
+
+        let r = map.find('GET', '/user');
+        assert.equal(r.found, false);
+    });
+
+    it('not match param', () => {
+        map.add('/user/:username', 'GET', function f1() { });
 
         let r = map.find('GET', '/user');
         assert.equal(r.found, false);

@@ -12,7 +12,8 @@
     "cover": "nyc --extension .ts --require ts-node/register npm test",
     "bench": "ts-node benchmarks",
     "build": "tsc",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "clean": "node -e '(fs=>[`index.js`,`index.js.map`,`index.d.ts`].map(f=>fs.existsSync(f)&&fs.unlinkSync(f)))(require(`fs`))'"
   },
   "repository": {
     "type": "git",

@@ -256,15 +256,15 @@ export class PathHandlerMap {
             throw new Error('Source node must to start with "/"');
         }
 
-        if (prefixPnames) {
+        if (prefixPnames && prefixPnames.length > 0) {
             source.addPrefixPnames(prefixPnames);
         }
 
-        if (dest.label == source.label) {
+        l = dest.prefix.length - 1;
+        if (l == 0 && dest.label == source.label) {
             return merge(dest, source);
         }
 
-        l = dest.prefix.length - 1;
         if (dest.prefix.charCodeAt(l) == SLASH) {
             n = new Node(dest.kind, dest.prefix.substring(l), dest.children, dest.handlerMap);
             dest.reset(dest.kind, dest.prefix.substring(0, l));
@@ -280,6 +280,11 @@ export class PathHandlerMap {
         return dest;
     }
 
+    merge(m: PathHandlerMap, path = '/') {
+        var info = this.add(path);
+        PathHandlerMap.merge(info.node, m.tree, info.pnames);
+    }
+
     /**
      * Add mapping between path expression and handler
      * @param method Method name
@@ -287,17 +292,18 @@ export class PathHandlerMap {
      * @param handler Handler
      */
     add(path: string, method?: string, handler?: Function) {
-        if (path.charCodeAt(0) != SLASH) {
-            path = '/' + path;
-        }
-
         var pnames: string[] = [], // Param names
             p = 0,
             pname: string,
             i: number,
             j: number,
             l: number,
-            code: number;
+            code: number,
+            node: Node;
+
+        if (path.charCodeAt(0) != SLASH) {
+            path = '/' + path;
+        }
 
         for (i = 0, l = path.length; i < l; i++) {
             code = path.charCodeAt(i);
@@ -323,7 +329,8 @@ export class PathHandlerMap {
                     l = path.length;
 
                     if (i == l) {
-                        return this.insert(path, pkind, method, handler, pnames);
+                        node = this.insert(path, pkind, method, handler, pnames);
+                        return { node, pnames: pnames.slice() };
                     }
 
                     this.insert(path.substring(0, i), pkind);
@@ -331,17 +338,20 @@ export class PathHandlerMap {
                 } else {
                     pname = pname.substring(0, pname.length - 1);
                     pnames.push(pname);
-                    return this.insert(path.substring(0, j - 1) + '*', akind, method, handler, pnames);
+                    node = this.insert(path.substring(0, j - 1) + '*', akind, method, handler, pnames);
+                    return { node, pnames: pnames.slice() };
                 }
 
             } else if (code == STAR) {
                 this.insert(path.substring(0, i), skind)
                 pnames.push('*');
-                return this.insert(path.substring(0, i + 1), akind, method, handler, pnames);
+                node = this.insert(path.substring(0, i + 1), akind, method, handler, pnames);
+                return { node, pnames: pnames.slice() };
             }
         }
 
-        return this.insert(path, skind, method, handler, pnames);
+        node = this.insert(path, skind, method, handler, pnames);
+        return { node, pnames: pnames.slice() };
     }
 
     /**
@@ -353,7 +363,7 @@ export class PathHandlerMap {
         var r: FindResult = {
             found: false,
             handler: undefined,
-            pnames: undefined,
+            pnames: [],
             pvalues: []
         };
         this.recursiveFind(method, path, this.tree, 0, r);
@@ -493,9 +503,8 @@ export class PathHandlerMap {
         }
     }
 
-    private recursiveFind(method: string, path: string, cn: Node, n: number, r: FindResult) {
-        var search = path,
-            pvalues = r.pvalues,
+    private recursiveFind(method: string, search: string, cn: Node, n: number, r: FindResult) {
+        var pvalues = r.pvalues,
 
             presearch: string, // Pre search
 
@@ -514,7 +523,9 @@ export class PathHandlerMap {
             if (h != undefined) {
                 r.found = true;
                 r.handler = h.handler;
-                r.pnames = h.pnames;
+                for (i = 0, l = h.pnames.length; i < l; i++) {
+                    r.pnames[i] = h.pnames[i];
+                }
             }
             return;
         }
@@ -532,6 +543,8 @@ export class PathHandlerMap {
 
         if (l == pl) {
             search = search.substring(l);
+        } else if (cn.kind == skind) {
+            return;
         }
 
         // Static node
@@ -564,8 +577,8 @@ export class PathHandlerMap {
                 return;
             }
 
-            n--;
             search = presearch;
+            n--;
         }
 
         // Any node
