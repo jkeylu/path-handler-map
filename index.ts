@@ -247,6 +247,7 @@ export class PathHandlerMap {
      * @param dest dest Node
      * @param source source Node
      * @param prefixPnames prefix pnames
+     * @return source root Node after merged
      */
     static merge(dest: Node, source: Node, prefixPnames?: string[]) {
         var l: number,
@@ -277,12 +278,17 @@ export class PathHandlerMap {
         }
 
         dest.addChild(source);
-        return dest;
+        return source;
     }
 
+    /**
+     * merge PathHandlerMap
+     * @param m source PathHandlerMap Instance
+     * @param path prefix
+     */
     merge(m: PathHandlerMap, path = '/') {
         var info = this.add(path);
-        PathHandlerMap.merge(info.node, m.tree, info.pnames);
+        m.tree = PathHandlerMap.merge(info.node, m.tree, info.pnames);
     }
 
     /**
@@ -363,7 +369,7 @@ export class PathHandlerMap {
         var r: FindResult = {
             found: false,
             handler: undefined,
-            pnames: [],
+            pnames: undefined,
             pvalues: []
         };
         this.recursiveFind(method, path, this.tree, 0, r);
@@ -504,13 +510,15 @@ export class PathHandlerMap {
     }
 
     private recursiveFind(method: string, search: string, cn: Node, n: number, r: FindResult) {
-        var pvalues = r.pvalues,
+        var pvalues: string[] = r.pvalues,
+            pnames: string[],
+            ppnames: string[],
 
             presearch: string, // Pre search
 
             c: Node, // Child node
 
-            sl: number, // search length
+            sl: number = search.length, // search length
             pl: number, // prefix length
             max: number,
             l: number,
@@ -518,19 +526,24 @@ export class PathHandlerMap {
 
             h: HandlerAndPnames;
 
-        if (search == '' || search == cn.prefix) {
+        if (sl == 0 || search == cn.prefix) {
             h = cn.handlerMap[method];
             if (h != undefined) {
                 r.found = true;
                 r.handler = h.handler;
-                for (i = 0, l = h.pnames.length; i < l; i++) {
-                    r.pnames[i] = h.pnames[i];
+
+                ppnames = h.pnames;
+                r.pnames = Array(n);
+                if (n > 0) {
+                    pnames = r.pnames;
+                    for (i = 0; i < n; i++) {
+                        pnames[i] = ppnames[i];
+                    }
                 }
             }
             return;
         }
 
-        sl = search.length;
         pl = cn.prefix.length;
         l = 0;
 
@@ -579,13 +592,14 @@ export class PathHandlerMap {
 
             search = presearch;
             n--;
+            pvalues.pop();
         }
 
         // Any node
         c = cn.children[STAR];
         if (c != undefined) {
             pvalues[n] = search;
-            n = -1;
+            n++;
             search = '';
             this.recursiveFind(method, search, c, n, r);
         }

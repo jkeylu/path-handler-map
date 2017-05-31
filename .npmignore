@@ -1,7 +1,3 @@
-index.ts
-tsconfig.json
 .nyc_output/
 .vscode/
-benchmarks/
 coverage/
-test/
