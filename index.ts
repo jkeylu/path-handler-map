@@ -44,6 +44,8 @@ export interface FindResult {
     pvalues: string[];
 }
 
+export type HandlerAndPnamesRevisor = (hp: HandlerAndPnames) => void | HandlerAndPnames;
+
 export class Node {
     kind: Kind;
     label: number;
@@ -98,22 +100,26 @@ export class Node {
         }
     }
 
-    addPrefixPnames(prefixPnames: string[]) {
+    updateHandlerMap(cb: HandlerAndPnamesRevisor) {
         var methods = Object.keys(this.handlerMap),
             labels = Object.keys(this.children),
             i: number,
             len: number,
             method: string,
-            label: number;
+            label: number,
+            hp: void | HandlerAndPnames;
 
         for (i = 0, len = methods.length; i < len; i++) {
             method = methods[i];
-            this.handlerMap[method].pnames = prefixPnames.concat(this.handlerMap[method].pnames);
+            hp = cb(this.handlerMap[method]);
+            if (hp) {
+                this.handlerMap[method] = hp;
+            }
         }
 
         for (i = 0, len = labels.length; i < len; i++) {
             label = <any>labels[i];
-            this.children[label].addPrefixPnames(prefixPnames);
+            this.children[label].updateHandlerMap(cb);
         }
     }
 
@@ -249,7 +255,7 @@ export class PathHandlerMap {
      * @param prefixPnames prefix pnames
      * @return source root Node after merged
      */
-    static merge(dest: Node, source: Node, prefixPnames?: string[]) {
+    static merge(dest: Node, source: Node, reviseHandlerAndPnames?: HandlerAndPnamesRevisor) {
         var l: number,
             n: Node;
 
@@ -257,8 +263,8 @@ export class PathHandlerMap {
             throw new Error('Source node must to start with "/"');
         }
 
-        if (prefixPnames && prefixPnames.length > 0) {
-            source.addPrefixPnames(prefixPnames);
+        if (reviseHandlerAndPnames) {
+            source.updateHandlerMap(reviseHandlerAndPnames);
         }
 
         l = dest.prefix.length - 1;
@@ -286,9 +292,24 @@ export class PathHandlerMap {
      * @param m source PathHandlerMap Instance
      * @param path prefix
      */
-    merge(m: PathHandlerMap, path = '/') {
-        var info = this.add(path);
-        m.tree = PathHandlerMap.merge(info.node, m.tree, info.pnames);
+    merge(m: PathHandlerMap, path = '/', updateHandler?: (handler: Function) => void | Function) {
+        var info = this.add(path),
+            reviseHandlerAndPnames: HandlerAndPnamesRevisor,
+            handler: void | Function;
+
+        if (info.pnames.length > 0 || updateHandler) {
+            reviseHandlerAndPnames = function (hp) {
+                hp.pnames = [].concat(info.pnames, hp.pnames);
+                if (updateHandler) {
+                    handler = updateHandler(hp.handler);
+                    if (handler) {
+                        hp.handler = handler;
+                    }
+                }
+            };
+        }
+
+        m.tree = PathHandlerMap.merge(info.node, m.tree, reviseHandlerAndPnames);
     }
 
     /**
@@ -389,6 +410,10 @@ export class PathHandlerMap {
             l: number,
             i: number;
 
+        if (path.charCodeAt(0) != SLASH) {
+            path = '/' + path;
+        }
+
         while (true) {
             if (cn == undefined) {
                 return null;
@@ -436,6 +461,14 @@ export class PathHandlerMap {
 
             cn = cn.children[search.charCodeAt(0)];
         }
+    }
+
+    /**
+     * Lookup the `Node` of real path
+     * @param path Real path
+     */
+    lookupByRealPath(path: string) {
+        return this.recursiveLookupByRealPath(path, this.tree, 0);
     }
 
     private insert(path: string, kind: Kind, method?: string, handler?: Function, pnames?: string[]) {
@@ -603,5 +636,80 @@ export class PathHandlerMap {
             search = '';
             this.recursiveFind(method, search, c, n, r);
         }
+    }
+
+    private recursiveLookupByRealPath(search: string, cn: Node, n: number): Node {
+        var presearch: string, // Pre search
+
+            c: Node, // Child node
+
+            sl: number = search.length, // search length
+            pl: number, // prefix length
+            max: number,
+            l: number,
+            i: number,
+
+            node: Node;
+
+        if (sl == 0 || search == cn.prefix) {
+            return cn;
+        }
+
+        pl = cn.prefix.length;
+        l = 0;
+
+        // LCP
+        max = pl;
+        if (sl < max) {
+            max = sl;
+        }
+        for (; l < max && search.charCodeAt(l) == cn.prefix.charCodeAt(l); l++) { }
+
+        if (l == pl) {
+            search = search.substring(l);
+        } else if (cn.kind == skind) {
+            return null;
+        }
+
+        // Static node
+        c = cn.children[search.charCodeAt(0)];
+        if (c != undefined && c.kind == skind) {
+            node = this.recursiveLookupByRealPath(search, c, n);
+            if (node != undefined) {
+                return node;
+            }
+        }
+
+        if (cn.kind != skind) {
+            return null;
+        }
+
+        // Param node
+        c = cn.children[COLON];
+        if (c != undefined) {
+            i = 0;
+            sl = search.length;
+            for (; i < sl && search.charCodeAt(i) != SLASH; i++) { }
+
+            n++
+            presearch = search;
+            search = search.substring(i);
+
+            node = this.recursiveLookupByRealPath(search, c, n);
+            if (node != undefined) {
+                return node;
+            }
+
+            search = presearch;
+            n--;
+        }
+
+        // Any node
+        c = cn.children[STAR];
+        if (c != undefined) {
+            return c;
+        }
+
+        return null;
     }
 }

@@ -75,7 +75,9 @@ describe('static merge', () => {
         m2.add('/e', 'GET', () => 1);
 
         let n = m1.lookup('/a/:b/c/');
-        PathHandlerMap.merge(n, m2.tree, ['b']);
+        PathHandlerMap.merge(n, m2.tree, (hp) => {
+            hp.pnames = ['b'].concat(hp.pnames);
+        });
 
         let r = m1.find('GET', '/a/b1/c/e');
         assert.equal(r.found, true);
