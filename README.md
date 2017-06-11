@@ -27,7 +27,7 @@ let r = m.find('GET', '/post/234');
 | `:name` | named param |
 | `:` | unnamed param |
 | `:name*` | named catch-all param |
-| `*` | unnamed catch-all param |
+| `:*` or `*` | unnamed catch-all param |
 
 - Named parameters and unnamed parameters match anything until the next '/' or the path end.
 - Named catch-all param and unnamed catch-all param match anything until the path end.

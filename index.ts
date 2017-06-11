@@ -364,6 +364,9 @@ export class PathHandlerMap {
 
                 } else {
                     pname = pname.substring(0, pname.length - 1);
+                    if (pname == '') {
+                        pname = '*';
+                    }
                     pnames.push(pname);
                     node = this.insert(path.substring(0, j - 1) + '*', akind, method, handler, pnames);
                     return { node, pnames: pnames.slice() };
