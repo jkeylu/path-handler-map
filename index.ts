@@ -39,8 +39,8 @@ export interface NodeChildren {
 
 export interface FindResult {
     found: boolean;
-    handler: Function;
-    pnames: string[];
+    handler?: Function;
+    pnames?: string[];
     pvalues: string[];
 }
 
@@ -52,12 +52,12 @@ export class Node {
     prefix: string;
     children: NodeChildren;
     handlerMap: MethodToHandlerMap;
-    parent: Node = null;
+    parent: Node | null = null;
 
     get signature() {
-        var cn: Node = this,
+        var cn: Node | null = this,
             prefixs: string[] = [];
-        while (cn != null) {
+        while (cn !== null) {
             prefixs.unshift(cn.prefix);
             cn = cn.parent;
         }
@@ -94,9 +94,9 @@ export class Node {
         this.children[c.label] = c;
     }
 
-    addHandler(method: string, handler: Function, pnames: string[]) {
-        if (method && typeof handler == 'function') {
-            this.handlerMap[method] = { handler, pnames };
+    addHandler(method: string | undefined, handler: Function | undefined, pnames: string[] | undefined) {
+        if (method && typeof handler === 'function') {
+            this.handlerMap[method] = { handler, pnames: pnames || [] };
         }
     }
 
@@ -147,7 +147,7 @@ export class Node {
             n.maps = this.handlerMap;
         }
 
-        if (labels.length == 0 || methods.length > 0) {
+        if (labels.length === 0 || methods.length > 0) {
             n.signature = this.signature;
         }
         return n;
@@ -187,11 +187,7 @@ function _merge(dest: Node, source: Node) {
  * @param source source Node
  */
 function merge(dest: Node, source: Node) {
-    var labels: string[],
-        label: number,
-        i: number,
-        len: number,
-        dpl: number,
+    var dpl: number,
         spl: number,
         max: number,
         l: number,
@@ -199,7 +195,7 @@ function merge(dest: Node, source: Node) {
 
     source.parent = null;
 
-    if (dest.prefix == source.prefix) {
+    if (dest.prefix === source.prefix) {
         return _merge(dest, source);
     }
 
@@ -212,10 +208,10 @@ function merge(dest: Node, source: Node) {
     if (spl < max) {
         max = spl;
     }
-    for (; l < max && dest.prefix.charCodeAt(l) == source.prefix.charCodeAt(l); l++) { }
+    for (; l < max && dest.prefix.charCodeAt(l) === source.prefix.charCodeAt(l); l++) { }
 
     // l == dpl && dpl <= spl && l <= spl
-    if (l == dpl) {
+    if (l === dpl) {
         n = new Node(source.kind, source.prefix.substring(l), source.children, source.handlerMap);
         if (dest.children[n.label]) {
             merge(dest.children[n.label], n);
@@ -231,7 +227,7 @@ function merge(dest: Node, source: Node) {
     dest.addChild(n);
 
     // l < dpl && l == spl && dpl > spl
-    if (l == spl) {
+    if (l === spl) {
         return _merge(dest, source);
     }
 
@@ -259,7 +255,7 @@ export class PathHandlerMap {
         var l: number,
             n: Node;
 
-        if (source.label != SLASH) {
+        if (source.label !== SLASH) {
             throw new Error('Source node must to start with "/"');
         }
 
@@ -268,11 +264,11 @@ export class PathHandlerMap {
         }
 
         l = dest.prefix.length - 1;
-        if (l == 0 && dest.label == source.label) {
+        if (l === 0 && dest.label === source.label) {
             return merge(dest, source);
         }
 
-        if (dest.prefix.charCodeAt(l) == SLASH) {
+        if (dest.prefix.charCodeAt(l) === SLASH) {
             n = new Node(dest.kind, dest.prefix.substring(l), dest.children, dest.handlerMap);
             dest.reset(dest.kind, dest.prefix.substring(0, l));
             dest.addChild(n);
@@ -294,12 +290,12 @@ export class PathHandlerMap {
      */
     merge(m: PathHandlerMap, path = '/', updateHandler?: (handler: Function) => void | Function) {
         var info = this.add(path),
-            reviseHandlerAndPnames: HandlerAndPnamesRevisor,
+            reviseHandlerAndPnames: HandlerAndPnamesRevisor | undefined,
             handler: void | Function;
 
         if (info.pnames.length > 0 || updateHandler) {
             reviseHandlerAndPnames = function (hp) {
-                hp.pnames = [].concat(info.pnames, hp.pnames);
+                hp.pnames = (<string[]>[]).concat(info.pnames, hp.pnames);
                 if (updateHandler) {
                     handler = updateHandler(hp.handler);
                     if (handler) {
@@ -328,34 +324,34 @@ export class PathHandlerMap {
             code: number,
             node: Node;
 
-        if (path.charCodeAt(0) != SLASH) {
+        if (path.charCodeAt(0) !== SLASH) {
             path = '/' + path;
         }
 
         for (i = 0, l = path.length; i < l; i++) {
             code = path.charCodeAt(i);
-            if (code == COLON) {
+            if (code === COLON) {
                 j = i + 1;
 
                 this.insert(path.substring(0, i), skind);
 
-                for (; i < l && path.charCodeAt(i) != SLASH; i++) { }
+                for (; i < l && path.charCodeAt(i) !== SLASH; i++) { }
 
                 pname = path.substring(j, i);
                 // unnamed param
-                if (pname == '') {
+                if (pname === '') {
                     pname = ':' + p;
                     p++;
                 }
 
-                if (pname.charCodeAt(pname.length - 1) != STAR) {
+                if (pname.charCodeAt(pname.length - 1) !== STAR) {
                     pnames.push(pname);
 
                     path = path.substring(0, j) + path.substring(i);
                     i = j;
                     l = path.length;
 
-                    if (i == l) {
+                    if (i === l) {
                         node = this.insert(path, pkind, method, handler, pnames);
                         return { node, pnames: pnames.slice() };
                     }
@@ -364,7 +360,7 @@ export class PathHandlerMap {
 
                 } else {
                     pname = pname.substring(0, pname.length - 1);
-                    if (pname == '') {
+                    if (pname === '') {
                         pname = '*';
                     }
                     pnames.push(pname);
@@ -372,10 +368,10 @@ export class PathHandlerMap {
                     return { node, pnames: pnames.slice() };
                 }
 
-            } else if (code == STAR) {
+            } else if (code === STAR) {
                 this.insert(path.substring(0, i), skind);
                 pname = path.substring(i + 1);
-                if (pname == '') {
+                if (pname === '') {
                     pname = '*';
                 }
                 pnames.push(pname);
@@ -417,12 +413,12 @@ export class PathHandlerMap {
             l: number,
             i: number;
 
-        if (path.charCodeAt(0) != SLASH) {
+        if (path.charCodeAt(0) !== SLASH) {
             path = '/' + path;
         }
 
         while (true) {
-            if (cn == undefined) {
+            if (cn === undefined) {
                 return null;
             }
 
@@ -435,34 +431,34 @@ export class PathHandlerMap {
             if (sl < max) {
                 max = sl;
             }
-            for (; l < max && search.charCodeAt(l) == cn.prefix.charCodeAt(l); l++) { }
+            for (; l < max && search.charCodeAt(l) === cn.prefix.charCodeAt(l); l++) { }
 
-            if (l != pl) {
+            if (l !== pl) {
                 return null;
             }
 
-            if (cn.kind == skind) {
+            if (cn.kind === skind) {
                 search = search.substring(l);
-                if (search.charCodeAt(0) == COLON) {
+                if (search.charCodeAt(0) === COLON) {
                     i = 0;
                     sl = search.length;
-                    for (; i < sl && search.charCodeAt(i) != SLASH; i++) { }
+                    for (; i < sl && search.charCodeAt(i) !== SLASH; i++) { }
 
-                    if (search.charCodeAt(i - 1) != STAR) {
+                    if (search.charCodeAt(i - 1) !== STAR) {
                         search = ':' + search.substring(i);
                     } else {
                         search = '*';
                     }
                 }
 
-            } else if (cn.kind == pkind) {
+            } else if (cn.kind === pkind) {
                 search = search.substring(l);
 
             } else {
                 search = '';
             }
 
-            if (search == '') {
+            if (search === '') {
                 return cn;
             }
 
@@ -498,7 +494,7 @@ export class PathHandlerMap {
             if (sl < max) {
                 max = sl;
             }
-            for (; l < max && search.charCodeAt(l) == cn.prefix.charCodeAt(l); l++) { }
+            for (; l < max && search.charCodeAt(l) === cn.prefix.charCodeAt(l); l++) { }
 
             if (l < pl) {
                 // There is some overlap between `search` and `cn.prefix`
@@ -509,7 +505,7 @@ export class PathHandlerMap {
                 cn.addChild(n);
 
                 // l < pl && l == sl
-                if (l == sl) {
+                if (l === sl) {
                     // `search` ⊆ `cn.prefix`
                     cn.kind = kind;
                     cn.addHandler(method, handler, pnames);
@@ -530,7 +526,7 @@ export class PathHandlerMap {
                 search = search.substring(l);
 
                 c = cn.findChildWithLabel(search.charCodeAt(0));
-                if (c != undefined) {
+                if (c !== undefined) {
                     // Continue search child
                     cn = c;
                     continue;
@@ -566,9 +562,9 @@ export class PathHandlerMap {
 
             h: HandlerAndPnames;
 
-        if (sl == 0 || search == cn.prefix) {
+        if (sl === 0 || search === cn.prefix) {
             h = cn.handlerMap[method];
-            if (h != undefined) {
+            if (h !== undefined) {
                 r.found = true;
                 r.handler = h.handler;
 
@@ -592,33 +588,33 @@ export class PathHandlerMap {
         if (sl < max) {
             max = sl;
         }
-        for (; l < max && search.charCodeAt(l) == cn.prefix.charCodeAt(l); l++) { }
+        for (; l < max && search.charCodeAt(l) === cn.prefix.charCodeAt(l); l++) { }
 
-        if (l == pl) {
+        if (l === pl) {
             search = search.substring(l);
-        } else if (cn.kind == skind) {
+        } else if (cn.kind === skind) {
             return;
         }
 
         // Static node
         c = cn.children[search.charCodeAt(0)];
-        if (c != undefined && c.kind == skind) {
+        if (c !== undefined && c.kind === skind) {
             this.recursiveFind(method, search, c, n, r);
             if (r.found) {
                 return;
             }
         }
 
-        if (cn.kind != skind) {
+        if (cn.kind !== skind) {
             return;
         }
 
         // Param node
         c = cn.children[COLON];
-        if (c != undefined) {
+        if (c !== undefined) {
             i = 0;
             sl = search.length;
-            for (; i < sl && search.charCodeAt(i) != SLASH; i++) { }
+            for (; i < sl && search.charCodeAt(i) !== SLASH; i++) { }
             pvalues[n] = search.substring(0, i);
 
             n++
@@ -637,7 +633,7 @@ export class PathHandlerMap {
 
         // Any node
         c = cn.children[STAR];
-        if (c != undefined) {
+        if (c !== undefined) {
             pvalues[n] = search;
             n++;
             search = '';
@@ -645,7 +641,7 @@ export class PathHandlerMap {
         }
     }
 
-    private recursiveLookupByRealPath(search: string, cn: Node, n: number): Node {
+    private recursiveLookupByRealPath(search: string, cn: Node, n: number): Node | null {
         var presearch: string, // Pre search
 
             c: Node, // Child node
@@ -656,9 +652,9 @@ export class PathHandlerMap {
             l: number,
             i: number,
 
-            node: Node;
+            node: Node | null;
 
-        if (sl == 0 || search == cn.prefix) {
+        if (sl === 0 || search === cn.prefix) {
             return cn;
         }
 
@@ -670,40 +666,40 @@ export class PathHandlerMap {
         if (sl < max) {
             max = sl;
         }
-        for (; l < max && search.charCodeAt(l) == cn.prefix.charCodeAt(l); l++) { }
+        for (; l < max && search.charCodeAt(l) === cn.prefix.charCodeAt(l); l++) { }
 
-        if (l == pl) {
+        if (l === pl) {
             search = search.substring(l);
-        } else if (cn.kind == skind) {
+        } else if (cn.kind === skind) {
             return null;
         }
 
         // Static node
         c = cn.children[search.charCodeAt(0)];
-        if (c != undefined && c.kind == skind) {
+        if (c !== undefined && c.kind === skind) {
             node = this.recursiveLookupByRealPath(search, c, n);
-            if (node != undefined) {
+            if (node !== null) {
                 return node;
             }
         }
 
-        if (cn.kind != skind) {
+        if (cn.kind !== skind) {
             return null;
         }
 
         // Param node
         c = cn.children[COLON];
-        if (c != undefined) {
+        if (c !== undefined) {
             i = 0;
             sl = search.length;
-            for (; i < sl && search.charCodeAt(i) != SLASH; i++) { }
+            for (; i < sl && search.charCodeAt(i) !== SLASH; i++) { }
 
             n++
             presearch = search;
             search = search.substring(i);
 
             node = this.recursiveLookupByRealPath(search, c, n);
-            if (node != undefined) {
+            if (node !== null) {
                 return node;
             }
 
@@ -713,7 +709,7 @@ export class PathHandlerMap {
 
         // Any node
         c = cn.children[STAR];
-        if (c != undefined) {
+        if (c !== undefined) {
             return c;
         }
 

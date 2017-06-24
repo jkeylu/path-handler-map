@@ -71,14 +71,15 @@ suite
     .add('path-to-regexp', function () {
         githubApiListWithoutAny.forEach(function (api) {
             var ptrList = ptrListMap[api.method];
-            var r: RegExpExecArray;
+            var r: RegExpExecArray | null | undefined;
             for (var i = 0; i < ptrList.length; i++) {
                 r = ptrList[i].exec(api.path);
                 if (r) {
                     break;
                 }
             }
-            assert.notEqual(r[0], null);
+            assert.notStrictEqual(r, undefined);
+            assert.notEqual(r![0], null);
         });
     })
     .add('route-recognizer', function () {
@@ -99,7 +100,7 @@ suite
     .on('cycle', function (event: Benchmark.Event) {
         console.log(String(event.target))
     })
-    .on('complete', function () {
+    .on('complete', function (this: Benchmark.Suite) {
         console.log('Fastest is ' + this.filter('fastest').map((it: any) => it.name));
     })
     // run async

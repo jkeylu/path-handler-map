@@ -18,13 +18,13 @@ describe('Github API', () => {
                 let r = m.find(api.method, api.path);
                 assert.equal(r.found, true);
                 assert.equal(r.handler, githubApiList[i].handler);
-                assert.equal(r.pvalues.length, r.pnames.length);
+                assert.equal(r.pvalues.length, r.pnames!.length);
             });
         });
     });
 
     describe('lookup', () => {
-        githubApiList.forEach((api, i) => {
+        githubApiList.forEach(api => {
             it(`lookup ${api.pathExpression}`, () => {
                 let signature = api.pathExpression.replace(/:[^\/]*/g, (match) => {
                     if (match[match.length - 1] == '*') {
@@ -36,7 +36,7 @@ describe('Github API', () => {
 
                 let n = m.lookup(api.pathExpression);
                 assert.notEqual(n, null);
-                assert.equal(n.signature, signature);
+                assert.equal(n!.signature, signature);
             });
         });
     });

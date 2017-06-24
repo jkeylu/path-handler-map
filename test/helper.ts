@@ -42,7 +42,7 @@ const githubReplacement = {
 };
 
 function replaceParams(pathExpression: string, replacement: { [key: string]: string; }) {
-    return pathExpression.replace(/(:[^\/]+)/g, (m: string, pname: string) => {
+    return pathExpression.replace(/(:[^\/]+)/g, (_, pname: string) => {
         return replacement[pname];
     });
 }
@@ -106,7 +106,7 @@ const bitbucketReplacement = {
 
 const bitbucketApis = fs.readFileSync(__dirname + '/fixtures/bitbucket-api.txt', { encoding: 'utf8' })
     .split('\n')
-    .reduce((memo: string[][], it) => { if (it) { memo.push(it.match(/([^ ]+?)\s+(GET)?(POST)?(PUT)?(DELETE)?/).slice(1, 6)); } return memo; }, [])
+    .reduce((memo: string[][], it) => { if (it) { memo.push(it.match(/([^ ]+?)\s+(GET)?(POST)?(PUT)?(DELETE)?/)!.slice(1, 6)); } return memo; }, [])
     .reduce((memo: string[][], it) => { for (var i = 1; i < 5; i++) { if (it[i]) { memo.push([it[i], it[0]]) } } return memo; }, [])
     .map(it => { it[1] = it[1].replace(/\{.+?\}/g, function (v) { return ':' + v.substring(1, v.length - 1); }); return it; })
     .map(it => it.join(' '));

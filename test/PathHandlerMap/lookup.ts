@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { PathHandlerMap, skind, pkind, akind } from '../..';
+import { PathHandlerMap } from '../..';
 
 describe('PathHandlerMap.lookup', () => {
     let m: PathHandlerMap;
@@ -15,23 +15,23 @@ describe('PathHandlerMap.lookup', () => {
     it('static node', () => {
         let node = m.lookup('/about');
         assert.notEqual(node, null);
-        assert.equal(node.signature, '/about');
+        assert.equal(node!.signature, '/about');
     });
 
     it('param node', () => {
         let node = m.lookup('/user_info/:username');
         assert.notEqual(node, null);
-        assert.equal(node.signature, '/user_info/:');
+        assert.equal(node!.signature, '/user_info/:');
 
         node = m.lookup('/post/:/:/:');
         assert.notEqual(node, null);
-        assert.equal(node.signature, '/post/:/:/:');
+        assert.equal(node!.signature, '/post/:/:/:');
     });
 
     it('any node', () => {
         let node = m.lookup('/page/*');
         assert.notEqual(node, null);
-        assert.equal(node.signature, '/page/*');
+        assert.equal(node!.signature, '/page/*');
     });
 
     it('not found', () => {

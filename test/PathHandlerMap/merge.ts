@@ -35,14 +35,14 @@ describe('static merge', () => {
                 it(`[github] find ${api.method} ${api.pathExpression}, but handler has been overridden`, () => {
                     let r = m.find(api.method, api.path);
                     assert.equal(r.found, true);
-                    assert.equal(r.pvalues.length, r.pnames.length);
+                    assert.equal(r.pvalues.length, r.pnames!.length);
                     assert.notEqual(r.handler, githubApiList[i].handler);
                 });
             } else {
                 it(`[github] find ${api.method} ${api.pathExpression}`, () => {
                     let r = m.find(api.method, api.path);
                     assert.equal(r.found, true);
-                    assert.equal(r.pvalues.length, r.pnames.length);
+                    assert.equal(r.pvalues.length, r.pnames!.length);
                     assert.equal(r.handler, githubApiList[i].handler);
                 });
             }
@@ -53,7 +53,7 @@ describe('static merge', () => {
                 let r = m.find(api.method, api.path);
                 assert.equal(r.found, true);
                 assert.equal(r.handler, bitbucketApiList[i].handler);
-                assert.equal(r.pvalues.length, r.pnames.length);
+                assert.equal(r.pvalues.length, r.pnames!.length);
             });
         });
     });
@@ -74,7 +74,7 @@ describe('static merge', () => {
 
         m2.add('/e', 'GET', () => 1);
 
-        let n = m1.lookup('/a/:b/c/');
+        let n = m1.lookup('/a/:b/c/')!;
         PathHandlerMap.merge(n, m2.tree, (hp) => {
             hp.pnames = ['b'].concat(hp.pnames);
         });
@@ -92,7 +92,7 @@ describe('static merge', () => {
         m1.add('/hello/world');
         m2.add('/foo');
 
-        let node = m1.lookup('/hello/world');
+        let node = m1.lookup('/hello/world')!;
         PathHandlerMap.merge(node, m2.tree);
 
         assert.notEqual(m1.lookup('/hello/world/foo'), null);
@@ -110,7 +110,7 @@ describe('instance merge', () => {
         m1.merge(m2, '/a/:b/:c');
         let r = m1.find('GET', '/a/b/c/foo');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f2');
+        assert.equal(r.handler!.name, 'f2');
         assert.deepEqual(r.pnames, ['b', 'c']);
     });
 });

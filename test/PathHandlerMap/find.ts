@@ -13,8 +13,8 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/user');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f1');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.handler!.name, 'f1');
+        assert.equal(r.pvalues.length, r.pnames!.length);
     })
 
     it('match static', () => {
@@ -23,8 +23,8 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/a/b/c');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f2');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.handler!.name, 'f2');
+        assert.equal(r.pvalues.length, r.pnames!.length);
     });
 
     it('match param', () => {
@@ -35,8 +35,8 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/a/c');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f2');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.handler!.name, 'f2');
+        assert.equal(r.pvalues.length, r.pnames!.length);
     });
 
     it('match unnamed param', () => {
@@ -44,9 +44,9 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/a/b');
         assert.equal(r.found, true);
-        assert.equal(r.pnames[0], ':0');
+        assert.equal(r.pnames![0], ':0');
         assert.equal(r.pvalues[0], 'b');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.pvalues.length, r.pnames!.length);
     });
 
     it('match any', () => {
@@ -56,14 +56,14 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/a/b/c/d');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f2');
-        assert.equal(r.pnames[0], 'a');
+        assert.equal(r.handler!.name, 'f2');
+        assert.equal(r.pnames![0], 'a');
         assert.equal(r.pvalues[0], 'a/b/c/d');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.pvalues.length, r.pnames!.length);
 
         r= map.find('GET', '/d/f');
         assert.equal(r.found, true);
-        assert.equal(r.handler.name, 'f3');
+        assert.equal(r.handler!.name, 'f3');
         assert.deepEqual(r.pnames, ['f']);
         assert.deepEqual(r.pvalues, ['f']);
     });
@@ -74,15 +74,15 @@ describe('PathHandlerMap.find', () => {
 
         let r = map.find('GET', '/a/b/c');
         assert.equal(r.found, true);
-        assert.equal(r.pnames[0], '*');
+        assert.equal(r.pnames![0], '*');
         assert.equal(r.pvalues[0], 'b/c');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.pvalues.length, r.pnames!.length);
 
         r = map.find('GET', '/a/c/d/e');
         assert.equal(r.found, true);
-        assert.equal(r.pnames[0], '*');
+        assert.equal(r.pnames![0], '*');
         assert.equal(r.pvalues[0], 'd/e');
-        assert.equal(r.pvalues.length, r.pnames.length);
+        assert.equal(r.pvalues.length, r.pnames!.length);
     });
 
     it('not match static', () => {
