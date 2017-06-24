@@ -52,6 +52,7 @@ describe('PathHandlerMap.find', () => {
     it('match any', () => {
         map.add('/:a/:b/:c', 'GET', function f1() { });
         map.add('/:a*', 'GET', function f2() { });
+        map.add('/d/*f', 'GET', function f3() {});
 
         let r = map.find('GET', '/a/b/c/d');
         assert.equal(r.found, true);
@@ -59,6 +60,12 @@ describe('PathHandlerMap.find', () => {
         assert.equal(r.pnames[0], 'a');
         assert.equal(r.pvalues[0], 'a/b/c/d');
         assert.equal(r.pvalues.length, r.pnames.length);
+
+        r= map.find('GET', '/d/f');
+        assert.equal(r.found, true);
+        assert.equal(r.handler.name, 'f3');
+        assert.deepEqual(r.pnames, ['f']);
+        assert.deepEqual(r.pvalues, ['f']);
     });
 
     it('match unnamed any', () => {

@@ -373,8 +373,12 @@ export class PathHandlerMap {
                 }
 
             } else if (code == STAR) {
-                this.insert(path.substring(0, i), skind)
-                pnames.push('*');
+                this.insert(path.substring(0, i), skind);
+                pname = path.substring(i + 1);
+                if (pname == '') {
+                    pname = '*';
+                }
+                pnames.push(pname);
                 node = this.insert(path.substring(0, i + 1), akind, method, handler, pnames);
                 return { node, pnames: pnames.slice() };
             }
